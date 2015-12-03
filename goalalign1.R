@@ -1,6 +1,8 @@
 
 ## Open rga package
 library(rga)
+# open dplyr
+library(dplyr)
 
 # Get authorization
 options(RCurlOptions = list(cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl")))
@@ -8,18 +10,18 @@ rga.open(instance="ga") # open browser get auth code and paste in console below
 
 ### 1. SELECT VIEW(s) 
 
+gaProfiles <- ga$getProfiles()
+gaProfiles1<- gaProfiles[,c("webPropertyId","name","id","websiteUrl")]
+gaProfiles1 <- gaProfiles1[order(gaProfiles1$webPropertyId,gaProfiles1$name),]
+rownames(gaProfiles1) <- NULL
+
 # Add desired view names to list
-viewnames <- c("01 NFS Main","01 TS Main") 
+viewname1 <- "01 NFS Main"
+viewname2 <- "01 TS Main"
 
-nviews <- length(viewnames)
-
-# Get view id based on name, for use in query 
-gaViewSelect <- data.frame()
-for(i in 1:nviews){
-    gaViewi <- gaProfiles1[(gaProfiles1$name==viewnames[i]),c("name","id")]
-    gaViewSelect <- rbind(gaViewSelect,gaViewi)
-}
-rownames(gaViewSelect) <- NULL # ids in gaViewSelect will be used in query
+viewlist <- filter(gaProfiles1,name==viewname1|name==viewname2) %>% select(name,id)
+write.csv(viewlist,file="viewlist.csv", row.names=FALSE)
+nviews <- length(viewlist)
 
 ### 2. SELECT DATE RANGE
 startdate="2015-12-01"
@@ -35,10 +37,25 @@ buypgcr <- "ga:goal2ConversionRate"
 socialfollow <- "ga:goal17Completions"
 videogoal <- "ga:goal15Completions"
 
-## Specify metrics to use by assiging to variables for use in queries
+## Get GOAL slot table
+goalview <- read.csv()
+goalslots <- read.csv("goalslots.csv")
+goals <- c("Buypg")
+goalcols <- match(goals,names(goalslots))
+
+# filter for selected goal for selected view, for each view
+# TEST FOR ONE VIEW, ONE GOAL
+g1v1 <- filter(goalslots,Profile.Name==viewname1) %>% select(goalcols)
+# populate goal variable with correct number
+goal1 <- paste(c("ga:goal",g1v1,"Completions"),collapse="")
+
+# NEED TO GET EACH GOAL FOR EACH VIEW
+for(v in 1:nviews){
+    gv <- filter(goalslots,Profile.Name==viewname[i]) %>% select(goalcols)
+}
 
 # this needs to be populated with correct goal number for each profile
-metric <- c(sessions,threepg)
+metric <- c(sessions,goal1)
 
 metriclist <- paste(metric,collapse=",")
 
