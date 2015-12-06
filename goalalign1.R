@@ -152,10 +152,10 @@ for(i in 1:nviews){
     
     # API is limited to 10,000 rows :[
     # change col names to be consistent across views - needed for goals
-    lmd <- length(metric) + length(dimen)+1
-  lg <- length(goals)-1
-    lgm <- lmd+lg
-    names(GAdataview)[lmd:lgm] <- goals
+    lmd <- length(metric) + length(dimen)+1 # get number of cols for dims and std metrics to get start of goals
+    lg <- length(goals)-1 # determine goal cols
+    lgm <- lmd+lg # set end col for goals
+    names(GAdataview)[lmd:lgm] <- goals # rename cols
     # add col to hold view name
     GAdataview$viewName <- gaViewSelect[i,"name"]
     GAdata <- rbind(GAdata, GAdataview)
