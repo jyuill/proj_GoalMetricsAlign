@@ -30,7 +30,7 @@ write.csv(viewlist,file="viewlist.csv", row.names=FALSE)
 ## Read in viewlist table (whether created previously or above)
 gaViews <- read.csv("viewlist.csv", header=TRUE)
 gaViewSelect <- select(gaViews,name,id)
-nviews <- length(gaViewSelect) # gen number of views for looping in query
+nviews <- nrow(gaViewSelect) # gen number of views for looping in query
 
 ### 2. SELECT METRICS - std metrics + goals
 # common metrics
@@ -123,7 +123,7 @@ dimenlist
 
 ### 4. SELECT DATE RANGE
 startdate="2015-12-01"
-enddate="2015-12-02"
+enddate="2015-12-04"
 ###
 
 ### 5. RUN QUERY
@@ -170,3 +170,10 @@ View(GAdata)
 # then can read from GAdata file to create starting GAdata table and add news for new dates
 
 ## some quick viz -> this could also be done in a separate file
+library(ggplot2)
+
+# create a panel plot to compare variables
+
+# scatterplot with facets
+qplot(pageviews,bounces,data=GAdata,facets=viewName~.~userType) # cyl horizontal
+
