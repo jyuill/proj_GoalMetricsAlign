@@ -175,5 +175,5 @@ library(ggplot2)
 # create a panel plot to compare variables
 
 # scatterplot with facets
-qplot(pageviews,bounces,data=GAdata,facets=viewName~.~userType) # cyl horizontal
+qplot(X3pg,RCA,data=GAdata,facets=viewName~.~userType) 
 
