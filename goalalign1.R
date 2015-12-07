@@ -19,9 +19,10 @@ rownames(gaProfiles1) <- NULL
 # List desired view names (if not already in existing viewlist.csv file)
 viewname1 <- "01 NFS Main"
 viewname2 <- "01 TS Main"
+viewname3 <- "01 SWBF"
 
 # filter view list for desired names and id
-viewlist <- filter(gaProfiles1,name==viewname1|name==viewname2) %>% select(name,id)
+viewlist <- filter(gaProfiles1,name==viewname1|name==viewname2|name==viewname3) %>% select(name,id)
 # write to csv to avoid above process in future unless necessary to get new views
 write.csv(viewlist,file="viewlist.csv", row.names=FALSE)
 ## 
@@ -29,25 +30,23 @@ write.csv(viewlist,file="viewlist.csv", row.names=FALSE)
 ## Read in viewlist table (whether created previously or above)
 gaViews <- read.csv("viewlist.csv", header=TRUE)
 gaViewSelect <- select(gaViews,name,id)
-nviews <- length(gaViewSelect)
+nviews <- length(gaViewSelect) # gen number of views for looping in query
 
-### 2. SELECT DATE RANGE
-startdate="2015-12-01"
-enddate="2015-12-01"
-###
-
-### 3. SELECT METRICS
+### 2. SELECT METRICS - std metrics + goals
 # common metrics
 users <- "ga:users"
 sessions <- "ga:sessions"
+pageviews <- "ga:pageviews"
+timespent <- "ga:sessionDuration"
+bounces <- "ga:bounces"
 
 # add selected metrics from list above
-metric <- c(users,sessions)
+metric <- c(users,sessions,pageviews,timespent,bounces)
 # create comma-separated list of metrics to be combined with goal numbers
 metriclist <- paste(metric,collapse=",")
 
 ## Get GOAL slot table
-goalslots <- read.csv("goalslots.csv")
+goalslots <- read.csv("goalslots.csv") # read in table
 # create list of potential goals from table
 g1 <- "X3pg"
 g2 <- "Buypg"
@@ -108,20 +107,26 @@ names(GAdataview)[lmd:lgm] <- goals
 
 ##
 
-### 4. SELECT DIMENSIONS
+### 3. SELECT DIMENSIONS
 
 # Sample dimensions, assigned to variables
 # added others if needed
 datedim <- "ga:date"
 yr <- "ga:year"
 mth <- "ga:month"
+newret <- "ga:userType"
 
 # Select dimensions for use in query
-dimen <- c(yr)
+dimen <- c(datedim,newret)
 dimenlist <- paste(dimen, collapse=",")
 dimenlist
 
-### 7. RUN QUERY
+### 4. SELECT DATE RANGE
+startdate="2015-12-01"
+enddate="2015-12-02"
+###
+
+### 5. RUN QUERY
 #### MAIN PART OF PROCEDURE
 
 # create dataframe
@@ -161,3 +166,7 @@ for(i in 1:nviews){
     GAdata <- rbind(GAdata, GAdataview)
 }
 View(GAdata)
+# can set up commands to write GAdata to csv
+# then can read from GAdata file to create starting GAdata table and add news for new dates
+
+## some quick viz -> this could also be done in a separate file
