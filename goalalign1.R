@@ -20,9 +20,14 @@ rownames(gaProfiles1) <- NULL
 viewname1 <- "01 NFS Main"
 viewname2 <- "01 TS Main"
 viewname3 <- "01 SWBF"
+viewname4 <- "F: FIFA MKT"
+viewname5 <- "01 MEdge Main"
 
 # filter view list for desired names and id
-viewlist <- filter(gaProfiles1,name==viewname1|name==viewname2|name==viewname3) %>% select(name,id)
+viewlist <- filter(gaProfiles1,name==viewname1|name==viewname2|name==viewname3|
+                       name==viewname3|
+                       name==viewname4|
+                       name==viewname5) %>% select(name,id)
 # write to csv to avoid above process in future unless necessary to get new views
 write.csv(viewlist,file="viewlist.csv", row.names=FALSE)
 ## 
@@ -58,55 +63,6 @@ goals <- c(g1,g2,g3,g4)
 # determine col numbers of goals - can't just use values in goals variable
 goalcols <- match(goals,names(goalslots))
 
-## THIS SECTION SHOWS HOW TO GET GOALS FOR SINGLE VIEW
-# filter for selected view and get goal numbers for selected goals
-#goalv1 <- filter(goalslots,View.id==view1) %>% select(goalcols)
-viewgoals <- filter(goalslots,View.id==gaViewSelect[1,2]) %>% select(goalcols)
-length(viewgoals)
-#
-allgoals <- NULL
-allgoalsrename <- NULL
-for(g in 1:length(viewgoals)){
-    eachgoal <- paste(c("ga:goal",viewgoals[,g],"Completions"),collapse="")
-    allgoalsrename <- c(allgoals,eachgoal)
-    allgoals <- paste(c(allgoals,eachgoal),collapse=",")
-}
-# combine list of goals with other metrics selected above
-allmetrics <- paste(c(metriclist,allgoals),collapse=",")
-allmetrics
-##
-
-## TEST - rename cols to match friendly goal names for consistency across views
-# uses GAdata created by running initial GA query
-# process:
-# 
-# each query needs GA goal names
-# subsequent queries for next view can't use these for rbind
-# GAdataview has to use goal names GA can recognize
-# GAdata has to match friendly consistent names
-# when data is collected in GAdataview needs to be converted for adding to GAdata
-# how to do that?
-# 
-# cols include dimensions and non-goal metrics - they don't need to be changed
-# unknown number of dimensions and non-goal metrics
-# but cols that need change should be known because they are derived from 'allgoals'
-# need to revert back from 'allgoals' to goals variable - same order
-# easier to do it pre-collapse into 'allgoals'
-# consistent names are in goalslots table 
-
-# created new variable allgoalsrename -> goals that correspond to goals variable in same order
-# how to use goals variable to rename allgoalsrename
-allgoalsrename <- goals # works great for simple list but need to rename data frame cols
-# to determine col numbers start with length of dimension list, add length of metricslist
-# use length of goals list
-lmd <- length(metric) + length(dimen)+1
-lg <- length(goals)-1
-lgm <- lmd+lg
-names(GAdataview)[lmd:lgm] <- goals
-
-
-##
-
 ### 3. SELECT DIMENSIONS
 
 # Sample dimensions, assigned to variables
@@ -122,8 +78,8 @@ dimenlist <- paste(dimen, collapse=",")
 dimenlist
 
 ### 4. SELECT DATE RANGE
-startdate="2015-12-01"
-enddate="2015-12-04"
+startdate="2015-11-01"
+enddate="2015-12-05"
 ###
 
 ### 5. RUN QUERY
@@ -166,8 +122,10 @@ for(i in 1:nviews){
     GAdata <- rbind(GAdata, GAdataview)
 }
 View(GAdata)
-# can set up commands to write GAdata to csv
-# then can read from GAdata file to create starting GAdata table and add news for new dates
+# write to file for future use
+write.csv(GAdata,file="GAdata.csv", row.names=FALSE)
+# read in prev data
+GAdata <- read.csv("GAdata.csv",header=TRUE)
 
 ## some quick viz -> this could also be done in a separate file
 library(ggplot2)
@@ -177,3 +135,16 @@ library(ggplot2)
 # scatterplot with facets
 qplot(X3pg,RCA,data=GAdata,facets=viewName~.~userType) 
 
+mec <- filter(GAdata,viewName=="01 MEdge Main")
+qplot(date,sessions,data=mec,col=userType)
+mecdaily <- group_by(mec,date)
+(mecdsess <- summarize(mecdaily,dsess=sum(sessions)))
+qplot(date,dsess,data=mecdsess)
+plot_mecdsess <- ggplot(mecdsess,aes(x=date,y=dsess))
+plot_mecdsess + geom_line()
+
+mecdsum <- summarize(mecdaily,dX3pg=sum(X3pg),dBuy=sum(Buypg),dRCA=sum(RCA))
+mecsum <- select(mecdsum,dX3pg,dBuy,dRCA)
+qplot(dX3pg,dBuy,data=mecdsum)
+qplot(dX3pg,dRCA,data=mecdsum)
+cor(mecsum)
