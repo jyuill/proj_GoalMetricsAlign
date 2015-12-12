@@ -137,6 +137,9 @@ qplot(X3pg,RCA,data=GAdata,facets=viewName~.~userType)
 
 mec <- filter(GAdata,viewName=="01 MEdge Main")
 qplot(date,sessions,data=mec,col=userType)
+p1 <- ggplot(mec,aes(x=date,y=sessions,col=userType))
+p1 + geom_line()
+
 mecdaily <- group_by(mec,date)
 (mecdsess <- summarize(mecdaily,dsess=sum(sessions)))
 qplot(date,dsess,data=mecdsess)
