@@ -151,7 +151,7 @@ plot_mecdsess <- ggplot(mecdsess,aes(x=date,y=dsess))
 plot_mecdsess + geom_line()
 
 # using the mecdaily group, sum other metrics by date
-mecdsum <- summarize(mecdaily,dX3pg=sum(X3pg),dBuy=sum(Buypg),dRCA=sum(RCA))
+mecdsum <- summarize(mecdaily,dUser=sum(users),dsess=sum(sessions),dPV=sum(pageviews),dX3pg=sum(X3pg),dBuy=sum(Buypg),dRCA=sum(RCA))
 # select data columns - remove factor cols
 mecsum <- select(mecdsum,dX3pg,dBuy,dRCA)
 # print separate plots
@@ -167,3 +167,31 @@ abline(lm(mecsum$dRCA~mecdsum$dX3pg)) # add linear regression line
 
 # check correlation of metrics
 cor(mecsum)
+
+# go back to MEC without new v return combined and look at relationship
+# of 3+pg and Buy pg, and 3+pg and RC by new v return
+## don't know how
+# can create facets with ggplot for new v return, but don't know how to do different metrics
+# combinations side by side
+# can do different metrics side by side with base plot, but don't know how to create facets
+# could create separate objects for new v return and layout in 2x2 but would prefer not all the work
+# - not conducive to rapid examination of data on different parameters
+# this is right idea separately but would like both together side-by-side
+# par(mfrow=c(1,2)) # doesn't work with qplot :(
+qplot(X3pg,RCA,data=mec,facets=userType~.)
+qplot(X3pg,Buypg,data=mec,facets=userType~.)
+
+# showing a set of different charts together
+names(mecdsum)
+# user trend
+# user histogram
+# boxplot with sessions by userType
+# scatterplot 3+pgs% v PVpS
+par(mfrow=c(2,2)) # establish 2x2 grid
+# par(mfrow=c(1,1)) # use to test charts individually
+plot(dUser~date,data=mecdsum,type="n") # blank plot
+lines(dUser~date,data=mecdsum) # add line to show user trend
+hist(mecdsum$dUser) # user histogram
+boxplot(mecdaily$sessions~mecdaily$userType) # boxplot sessions by usertype
+plot(dPV~dX3pg,data=mecdsum) # 3+pg v PVpS with linear regression line
+abline(lm(mecdsum$dPV~mecdsum$dX3pg))
