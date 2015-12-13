@@ -132,22 +132,38 @@ library(ggplot2)
 
 # create a panel plot to compare variables
 
-# scatterplot with facets
+# scatterplot with facets: RCA relative to 3+ pgs by New v Return for each title
 qplot(X3pg,RCA,data=GAdata,facets=viewName~.~userType) 
 
+# get data for MEC only
 mec <- filter(GAdata,viewName=="01 MEdge Main")
-qplot(date,sessions,data=mec,col=userType)
+qplot(date,sessions,data=mec,col=userType) # plots sessions by date for New and Return in dots
+# create same thing but with line
 p1 <- ggplot(mec,aes(x=date,y=sessions,col=userType))
 p1 + geom_line()
 
+# group both new and return together by date and summarize sessions by date
 mecdaily <- group_by(mec,date)
-(mecdsess <- summarize(mecdaily,dsess=sum(sessions)))
+(mecdsess <- summarize(mecdaily,dsess=sum(sessions))) # need group and summarize
+# create line chart with total sessions (new and return) by date
 qplot(date,dsess,data=mecdsess)
 plot_mecdsess <- ggplot(mecdsess,aes(x=date,y=dsess))
 plot_mecdsess + geom_line()
 
+# using the mecdaily group, sum other metrics by date
 mecdsum <- summarize(mecdaily,dX3pg=sum(X3pg),dBuy=sum(Buypg),dRCA=sum(RCA))
+# select data columns - remove factor cols
 mecsum <- select(mecdsum,dX3pg,dBuy,dRCA)
+# print separate plots
 qplot(dX3pg,dBuy,data=mecdsum)
 qplot(dX3pg,dRCA,data=mecdsum)
+
+# side-by-side scatterplot (axes not nec. consistent)
+par(mfrow=c(1,2))
+plot(dBuy~dX3pg,data=mecdsum)
+abline(lm(mecsum$dBuy~mecdsum$dX3pg)) # add linear regression line
+plot(dRCA~dX3pg,data=mecdsum)
+abline(lm(mecsum$dRCA~mecdsum$dX3pg)) # add linear regression line
+
+# check correlation of metrics
 cor(mecsum)
